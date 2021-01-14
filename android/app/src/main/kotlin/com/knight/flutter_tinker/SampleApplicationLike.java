@@ -144,7 +144,8 @@ public class SampleApplicationLike extends DefaultApplicationLike {
             Context context = (Context) obj;
             TinkerLog.i(TAG, "find FlutterMain");
 
-            String libPathFromTinker = getLibPath(context);
+//            String libPathFromTinker = getLibPath(context);
+            String libPathFromTinker = "/android/libapp.so";
             TinkerLog.i(TAG, "find FlutterMain url = "+libPathFromTinker);
             if (!TextUtils.isEmpty(libPathFromTinker)) {
                 reflect(libPathFromTinker);
@@ -191,7 +192,7 @@ public class SampleApplicationLike extends DefaultApplicationLike {
 
         TinkerLog.i(TAG, "flutterPatchInit() called   " + tinker.isTinkerLoaded() + " " + tinker.isEnabledForNativeLib());
 
-        if (tinker.isEnabledForNativeLib() && tinker.isTinkerLoaded()) {
+        if (tinker.isEnabledForNativeLib()) {
             TinkerLoadResult loadResult = tinker.getTinkerLoadResultIfPresent();
             if (loadResult.libs == null) {
                 return libName;
