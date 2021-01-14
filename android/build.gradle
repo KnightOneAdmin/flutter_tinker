@@ -7,9 +7,9 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'com.android.tools.build:gradle:3.4.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.tencent.bugly:tinker-support:1.1.5'
+        classpath 'com.tencent.bugly:tinker-support:1.2.1'
         classpath 'com.sk.hannibal:hannibal:1.0.7'
     }
 }
