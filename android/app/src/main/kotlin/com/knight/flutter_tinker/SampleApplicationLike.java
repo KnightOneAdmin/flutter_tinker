@@ -6,16 +6,27 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import androidx.multidex.MultiDex;
 
+import com.sk.flutterpatch.FlutterPatch;
 import com.tencent.bugly.Bugly;
 import com.tencent.bugly.beta.Beta;
 import com.tencent.bugly.beta.interfaces.BetaPatchListener;
 import com.tencent.tinker.entry.DefaultApplicationLike;
+import com.tencent.tinker.lib.tinker.Tinker;
+import com.tencent.tinker.lib.tinker.TinkerLoadResult;
+import com.tencent.tinker.lib.util.TinkerLog;
+import com.tencent.tinker.loader.shareutil.ShareConstants;
+import com.tencent.tinker.loader.shareutil.SharePatchFileUtil;
 
+import java.io.File;
+import java.lang.reflect.Field;
 import java.util.Locale;
+
+import io.flutter.embedding.engine.loader.FlutterLoader;
 
 /**
  * 自定义ApplicationLike类.
@@ -78,6 +89,7 @@ public class SampleApplicationLike extends DefaultApplicationLike {
             @Override
             public void onApplySuccess(String msg) {
                 Toast.makeText(getApplication(), "补丁应用成功", Toast.LENGTH_SHORT).show();
+                hook(getApplication());
             }
 
             @Override
@@ -110,6 +122,7 @@ public class SampleApplicationLike extends DefaultApplicationLike {
 
         // TODO: 安装tinker
         Beta.installTinker(this);
+
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -122,5 +135,109 @@ public class SampleApplicationLike extends DefaultApplicationLike {
     public void onTerminate() {
         super.onTerminate();
         Beta.unInit();
+    }
+
+    public static void hook(Object obj) {
+        if (obj instanceof Context) {
+
+            TinkerLog.i(TAG, "find FlutterMain  进来了。。。");
+            Context context = (Context) obj;
+            TinkerLog.i(TAG, "find FlutterMain");
+
+            String libPathFromTinker = getLibPath(context);
+            TinkerLog.i(TAG, "find FlutterMain url = "+libPathFromTinker);
+            if (!TextUtils.isEmpty(libPathFromTinker)) {
+                reflect(libPathFromTinker);
+            }
+
+        } else {
+
+            TinkerLog.i(TAG, "Object: " + obj.getClass().getName());
+        }
+
+    }
+
+    public static String getLibPath(Context context) {
+        String libPath = findLibraryFromTinker(context, "lib" + File.separator + getCpuABI(), "libapp.so");
+        if (!TextUtils.isEmpty(libPath) && libPath.equals("libapp.so")) {
+            return null;
+        }
+        return libPath;
+    }
+
+
+    public static void reflect(String libPath) {
+        try {
+            FlutterLoader flutterLoader = FlutterLoader.getInstance();
+
+            Field field = FlutterLoader.class.getDeclaredField("aotSharedLibraryName");
+            field.setAccessible(true);
+            field.set(flutterLoader, libPath);
+
+            TinkerLog.i(TAG, "flutter patch is loaded successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String findLibraryFromTinker(Context context, String relativePath, String libName) throws UnsatisfiedLinkError {
+        final Tinker tinker = Tinker.with(context);
+
+        libName = libName.startsWith("lib") ? libName : "lib" + libName;
+        libName = libName.endsWith(".so") ? libName : libName + ".so";
+        String relativeLibPath = relativePath + File.separator + libName;
+
+        TinkerLog.i(TAG, "find FlutterMain relativeLibPath = "+relativeLibPath);
+
+        TinkerLog.i(TAG, "flutterPatchInit() called   " + tinker.isTinkerLoaded() + " " + tinker.isEnabledForNativeLib());
+
+        if (tinker.isEnabledForNativeLib() && tinker.isTinkerLoaded()) {
+            TinkerLoadResult loadResult = tinker.getTinkerLoadResultIfPresent();
+            if (loadResult.libs == null) {
+                return libName;
+            }
+            for (String name : loadResult.libs.keySet()) {
+                if (!name.equals(relativeLibPath)) {
+                    continue;
+                }
+                String patchLibraryPath = loadResult.libraryDirectory + "/" + name;
+                File library = new File(patchLibraryPath);
+                if (!library.exists()) {
+                    continue;
+                }
+
+                boolean verifyMd5 = tinker.isTinkerLoadVerify();
+                if (verifyMd5 && !SharePatchFileUtil.verifyFileMd5(library, loadResult.libs.get(name))) {
+                    tinker.getLoadReporter().onLoadFileMd5Mismatch(library, ShareConstants.TYPE_LIBRARY);
+                } else {
+                    TinkerLog.i(TAG, "findLibraryFromTinker success:" + patchLibraryPath);
+                    return patchLibraryPath;
+                }
+            }
+        }
+
+        return libName;
+    }
+
+    /**
+     * 获取最优abi
+     *
+     * @return
+     */
+    public static String getCpuABI() {
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            for (String cpu : Build.SUPPORTED_ABIS) {
+                if (!TextUtils.isEmpty(cpu)) {
+                    TinkerLog.i(TAG, "cpu abi is:" + cpu);
+                    return cpu;
+                }
+            }
+        } else {
+            TinkerLog.i(TAG, "cpu abi is:" + Build.CPU_ABI);
+            return Build.CPU_ABI;
+        }
+
+        return "";
     }
 }
