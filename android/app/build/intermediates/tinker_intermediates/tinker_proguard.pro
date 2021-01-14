@@ -1,3 +1,4 @@
+-applymapping /Users/knight/WorkingSpace/asFlutter/flutter_tinker/build/app/bakApk/app-0114-14-12-58/app-release-mapping.txt
 -keepattributes *Annotation* 
 -dontwarn com.tencent.tinker.anno.AnnotationProcessor 
 -keep @com.tencent.tinker.anno.DefaultLifeCycle public class *
