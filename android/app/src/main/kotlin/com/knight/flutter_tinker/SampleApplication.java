@@ -1,7 +1,10 @@
 package com.knight.flutter_tinker;
 
+import com.tencent.tinker.lib.util.TinkerLog;
 import com.tencent.tinker.loader.app.TinkerApplication;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
+
+import io.flutter.view.FlutterMain;
 
 /**
  * 自定义Application.
@@ -21,5 +24,11 @@ public class SampleApplication extends TinkerApplication {
     public SampleApplication() {
         super(ShareConstants.TINKER_ENABLE_ALL, "com.knight.flutter_tinker.SampleApplicationLike",
                 "com.tencent.tinker.loader.TinkerLoader", false, true);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        FlutterMain.startInitialization(this);
     }
 }
