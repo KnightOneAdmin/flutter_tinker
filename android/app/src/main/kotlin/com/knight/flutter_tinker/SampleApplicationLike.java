@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.multidex.MultiDex;
 
+import com.sk.flutterpatch.FlutterPatch;
 import com.tencent.bugly.Bugly;
 import com.tencent.bugly.beta.Beta;
 import com.tencent.bugly.beta.interfaces.BetaPatchListener;
