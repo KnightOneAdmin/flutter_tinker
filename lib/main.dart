@@ -97,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'Flutter Tinker Demo-app-0118-19-52-12',
+              'Flutter Tinker Demo-app-0119-10-17-04',
             ),
             Text(
               '$_counter',

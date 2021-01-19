@@ -49,6 +49,8 @@ public class SampleApplicationLike extends DefaultApplicationLike {
         Beta.canAutoPatch = true;
         // 设置是否提示用户重启，默认为false
         Beta.canNotifyUserRestart = true;
+        //自动检测
+        Beta.autoCheckUpgrade=true;
         // 补丁回调接口
         Beta.betaPatchListener = new BetaPatchListener() {
             @Override
